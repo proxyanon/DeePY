@@ -192,7 +192,7 @@ class PyNN:
 			print("Nao foi possivel salvar a configuracao da rede ...")
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False):
+	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False, banners=True):
 
 		if not autodel:
 			q = raw_input('Continuar vai remover todos os pesos salvos ... ')
@@ -213,12 +213,17 @@ class PyNN:
 				self.backpropagation(entradas, saidas, eta)
 				outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
 				epochs += 1
-				print(float(str(outputs[0])[0:dc]), float(saida[0]), epochs)
+				if banners:
+					print(float(str(outputs[0])[0:dc]), float(saida[0]), epochs)
 		except KeyboardInterrupt:
 			pass
 
 		if savenetwork:
-			print("\n[+] Salvando pesos ...")
-			self.saveweights(path)
+			if banners:
+				print("\n[+] Salvando pesos ...")
+			try:
+				self.saveweights(path)
+			except KeyboardInterrupt:
+				exit(1)
 
 		#return outputs[len(outputs)-1]
