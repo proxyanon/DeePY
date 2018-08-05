@@ -1,5 +1,5 @@
 # py-nn
-Rede neural de 4 camadas, implementação simples afim de fazer com que mais estudantes aprendam está surpreendente área
+Biblioteca simples, implementando a criação de redes com várias camadas e neurônios ...
 
 # Requisitos
 numpy :)
