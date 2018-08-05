@@ -42,6 +42,3 @@ nn = PyNN(n_camadas=3, n_entradas=5, n_hidden=10, n_saida=1, activation='sigmoid
 # execucao dos pesos treinados
 print entrada_teste * 10000, '=>', nn.run(entrada=entrada_teste, act='sigmoid')
 print entrada_teste_2 * 10000, '=>', nn.run(entrada=entrada_teste_2, act='sigmoid')
-
-print entrada_teste * 10000, '=>', nn.run(entrada=entrada_teste, act='sigmoid', path='generations/generation_4/')
-print entrada_teste_2 * 10000, '=>', nn.run(entrada=entrada_teste_2, act='sigmoid', path='generations/generation_4/')
