@@ -21,6 +21,8 @@ def _activation(x, act='sigmoid'):
 		return 1 / (1 + exp(-x))
 	elif act == 'tanh':
 		return tanh(x)
+	elif act == 'relu':
+		return abs(x) * (x > 0)
 
 ''' funcoes de derivadas dos neuronios '''
 def _derivate(x, act='sigmoid'):
@@ -28,6 +30,8 @@ def _derivate(x, act='sigmoid'):
 		return x * (1 - x)
 	elif act == 'tanh':
 		return 1 - x**2
+	elif act == 'relu':
+		return 1 * (x > 0)
 
 ''' foward unico para a execucao da rede '''
 def single_foward(entradas, pesos, act='sigmoid'):
@@ -105,30 +109,46 @@ class PyNN:
 	''' Carrega os pesos a partir dos pesos salvos pela funcao saveweights '''
 	def loadweights(self, path='weights/', delimiter=';'):
 		
+		arrays = []
 		pesos_ajustados = []
-		for x in xrange(self.n_pesos):
-			filename = path+'pesos_'+str(x)+'.txt'
-			handle = open(filename, 'r')
-			read = handle.read()
-			handle.close()
+		shapes = []
 
-			spl = read.split(delimiter)
-			arr = array(spl[1:len(spl)], dtype=float)
-			pesos_ajustados.append(arr)
+		for paths,dirs,files in walk(path):
+			for file in files:
+				
+				handle = open(paths+'\\'+file, 'r')
+				read = handle.read()
+				handle.close()
 
-		return pesos_ajustados
+				if '[network]' in read:
+					read = read.replace(read[0:len('[network]')+1], '')
+					spl = read.split(delimiter)
+					arr = array(spl, dtype=int)
+					shapes.append(arr)
+				else:
+					spl = read.split(delimiter)
+					arr = array(spl[1:len(spl)], dtype=float)
+					pesos_ajustados.append(arr)
+
+		arrays.append(pesos_ajustados)
+		arrays.append(shapes)
+
+		return arrays
 
 	''' Roda a rede neural com os pesos treinados, e com uma entrada qualquer '''
 	def run(self, entrada, path='weights/', act='sigmoid'):
 
-		pesos_ajustados = self.loadweights(path)
+		arrays = self.loadweights(path)
+		pesos_ajustados = arrays[0]
+		shapes = arrays[1][0]
+
 		for x, value in enumerate(pesos_ajustados):
 			if x == 0:
-				pesos_ajustados[x] = value.reshape(self.n_entradas, self.n_hidden)
-			elif x < (self.n_pesos-1):
-				pesos_ajustados[x] = value.reshape(self.n_hidden, self.n_hidden)
+				pesos_ajustados[x] = value.reshape(shapes[1], shapes[2])
+			elif x < (shapes[4]-1):
+				pesos_ajustados[x] = value.reshape(shapes[2], shapes[2])
 			else:
-				pesos_ajustados[x] = value.reshape(self.n_hidden, self.n_saida)
+				pesos_ajustados[x] = value.reshape(shapes[2], shapes[3])
 
 		output = single_foward(entradas=entrada, pesos=pesos_ajustados, act=act)
 		return output[len(output)-1]
@@ -138,12 +158,16 @@ class PyNN:
 		for i, ps in enumerate(self.pesos):
 			for z, p in enumerate(ps):
 				for c, x in enumerate(p):
-					handle = open(path+'pesos_'+str(i)+'.txt', 'a')
+					handle = open(path+'/weight_'+str(i)+'.csv', 'a')
 					handle.write(delimiter+str(x))
 					handle.close()
+		handle = open(path+'/network-arch.csv', 'w')
+		handle.write('[network]\n')
+		handle.write('{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}'.format(self.n_camadas, self.n_entradas, self.n_hidden, self.n_saida, self.n_pesos, delimiter=delimiter))
+		handle.close()
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida=False, eta=1, path='weights/', svw=True):
+	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True):
 
 		q = raw_input('Continuar vai remover todos os pesos salvos ... ')
 		if len(q) == '' or q.upper() != 'N':
@@ -151,7 +175,6 @@ class PyNN:
 			for paths,dirs,files in walk('weights/'):
 				for file in files:
 					remove(paths+'\\'+file)
-
 		epochs = 0
 		try:
 			dc = len(str(saida[0]).split('.')[1])+2
@@ -164,7 +187,7 @@ class PyNN:
 		except KeyboardInterrupt:
 			pass
 
-		if svw:
+		if savenetwork:
 			print("\n[+] Salvando pesos ...")
 			self.saveweights(path)
 
