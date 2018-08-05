@@ -156,11 +156,11 @@ class PyNN:
 		try:
 			dc = len(str(saida[0]).split('.')[1])+2
 			outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
-			while str(outputs[0])[0:dc] != saida[0]:
+			while float(str(outputs[0])[0:dc]) != saida[0]:
 				self.backpropagation(entradas, saidas, eta)
 				outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
 				epochs += 1
-				print str(outputs[0])[0:dc], saida[0], epochs
+				print float(str(outputs[0])[0:dc]), saida[0], epochs
 		except KeyboardInterrupt:
 			pass
 
