@@ -42,7 +42,7 @@ def single_foward(entradas, pesos, act='sigmoid'):
 	return layers
 
 ''' Rede neural by @DanielFreire00 '''
-class PyNNq:
+class PyNN:
 
 	def __init__(self, n_camadas, n_entradas, n_hidden, n_saida, activation='sigmoid'):
 
