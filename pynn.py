@@ -3,17 +3,24 @@
 ''' 
 	
 	@author Daniel Victor Frerie Feitosa
-	@version 3.0.1
+	@version 3.1.0
 	@editor Sublime Text 3
 	
 	@copyrights by Daniel Victor Frerie Feitosa - 2018
 	@license GPL 3.0
-	
-	coded with promethazine and coffee ...
-'''
 
-from numpy import dot, array, random, exp, savetxt, tanh
+	Twitter: @DanielFreire00
+	Youtube: ProXy Sec
+	
+	feito com muita prometazina e cafe ...
+'''
 from os import path, makedirs, remove, walk, _exit as exit
+try:
+	from numpy import dot, array, random, exp, savetxt, tanh
+except ImportError:
+	print("O modulo numpy nao foi encontrado execute o comando: python -m pip install numpy")
+	exit(1)
+
 
 ''' funcoes de ativacao dos neuronios '''
 def _activation(x, act='sigmoid'):
@@ -22,14 +29,14 @@ def _activation(x, act='sigmoid'):
 	elif act == 'tanh':
 		return tanh(x)
 	elif act == 'relu':
-		return abs(x) * (x > 0)
+		return x * (x > 0)
 
 ''' funcoes de derivadas dos neuronios '''
 def _derivate(x, act='sigmoid'):
 	if act == 'sigmoid':
 		return x * (1 - x)
 	elif act == 'tanh':
-		return 1 - x**2
+		return 1 - x * x
 	elif act == 'relu':
 		return 1 * (x > 0)
 
@@ -116,19 +123,26 @@ class PyNN:
 		for paths,dirs,files in walk(path):
 			for file in files:
 				
-				handle = open(paths+'\\'+file, 'r')
-				read = handle.read()
-				handle.close()
+				try:
+					handle = open(paths+'\\'+file, 'r')
+					read = handle.read()
+					handle.close()
+				except IOError:
+					print("Nao foi possivel carregar o seguite csv => {filename}".format(filename=file))
 
-				if '[network]' in read:
-					read = read.replace(read[0:len('[network]')+1], '')
-					spl = read.split(delimiter)
-					arr = array(spl, dtype=int)
-					shapes.append(arr)
-				else:
-					spl = read.split(delimiter)
-					arr = array(spl[1:len(spl)], dtype=float)
-					pesos_ajustados.append(arr)
+				try:
+					if '[network]' in read:
+						read = read.replace(read[0:len('[network]')+1], '')
+						spl = read.split(delimiter)
+						arr = array(spl, dtype=int)
+						shapes.append(arr)
+					else:
+						spl = read.split(delimiter)
+						arr = array(spl[1:len(spl)], dtype=float)
+						pesos_ajustados.append(arr)
+				except:
+					print("Pesos ou configuracoes da rede invalidos ...")
+					exit(1)
 
 		arrays.append(pesos_ajustados)
 		arrays.append(shapes)
@@ -143,12 +157,16 @@ class PyNN:
 		shapes = arrays[1][0]
 
 		for x, value in enumerate(pesos_ajustados):
-			if x == 0:
-				pesos_ajustados[x] = value.reshape(shapes[1], shapes[2])
-			elif x < (shapes[4]-1):
-				pesos_ajustados[x] = value.reshape(shapes[2], shapes[2])
-			else:
-				pesos_ajustados[x] = value.reshape(shapes[2], shapes[3])
+			try:
+				if x == 0:
+					pesos_ajustados[x] = value.reshape(shapes[1], shapes[2])
+				elif x < (shapes[4]-1):
+					pesos_ajustados[x] = value.reshape(shapes[2], shapes[2])
+				else:
+					pesos_ajustados[x] = value.reshape(shapes[2], shapes[3])
+			except:
+				print("Valores do arquivo de arquitetura da rede estao ivalidos !")
+				exit(1)
 
 		output = single_foward(entradas=entrada, pesos=pesos_ajustados, act=act)
 		return output[len(output)-1]
@@ -158,23 +176,35 @@ class PyNN:
 		for i, ps in enumerate(self.pesos):
 			for z, p in enumerate(ps):
 				for c, x in enumerate(p):
-					handle = open(path+'/weight_'+str(i)+'.csv', 'a')
-					handle.write(delimiter+str(x))
-					handle.close()
-		handle = open(path+'/network-arch.csv', 'w')
-		handle.write('[network]\n')
-		handle.write('{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}'.format(self.n_camadas, self.n_entradas, self.n_hidden, self.n_saida, self.n_pesos, delimiter=delimiter))
-		handle.close()
+					try:
+						handle = open('{path}/weight_{num}.csv'.format(path=path, num=i), 'a')
+						handle.write(delimiter+str(x))
+						handle.close()
+					except IOError:
+						print("Nao foi possivel salvar o peso => {peso_err}".format(peso_err=i))
+
+		try:
+			handle = open('{path}/network-arch.csv'.format(path=path), 'w')
+			handle.write('[network]\n')
+			handle.write('{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}'.format(self.n_camadas, self.n_entradas, self.n_hidden, self.n_saida, self.n_pesos, delimiter=delimiter))
+			handle.close()
+		except IOError:
+			print("Nao foi possivel salvar a configuracao da rede ...")
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True):
+	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False):
 
-		q = raw_input('Continuar vai remover todos os pesos salvos ... ')
-		if len(q) == '' or q.upper() != 'N':
-			
+		if not autodel:
+			q = raw_input('Continuar vai remover todos os pesos salvos ... ')
+			if len(q) == '' or q.upper() != 'N':
+				for paths,dirs,files in walk('weights/'):
+					for file in files:
+						remove(paths+'\\'+file)
+		else:
 			for paths,dirs,files in walk('weights/'):
 				for file in files:
 					remove(paths+'\\'+file)
+
 		epochs = 0
 		try:
 			dc = len(str(saida[0]).split('.')[1])+2
@@ -183,7 +213,7 @@ class PyNN:
 				self.backpropagation(entradas, saidas, eta)
 				outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
 				epochs += 1
-				print float(str(outputs[0])[0:dc]), saida[0], epochs
+				print(float(str(outputs[0])[0:dc]), float(saida[0]), epochs)
 		except KeyboardInterrupt:
 			pass
 
