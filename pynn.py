@@ -192,7 +192,7 @@ class PyNN:
 			print("Nao foi possivel salvar a configuracao da rede ...")
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False, banners=True):
+	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False, banners=True, delimiter=';'):
 
 		if not autodel:
 			q = raw_input('Continuar vai remover todos os pesos salvos ... ')
@@ -222,7 +222,7 @@ class PyNN:
 			if banners:
 				print("\n[+] Salvando pesos ...")
 			try:
-				self.saveweights(path)
+				self.saveweights(path=path, delimiter=delimiter)
 			except KeyboardInterrupt:
 				exit(1)
 
