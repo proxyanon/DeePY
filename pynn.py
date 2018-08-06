@@ -3,7 +3,7 @@
 ''' 
 	
 	@author Daniel Victor Frerie Feitosa
-	@version 3.1.0
+	@version 3.2.0
 	@editor Sublime Text 3
 	
 	@copyrights by Daniel Victor Frerie Feitosa - 2018
@@ -16,7 +16,7 @@
 '''
 from os import path, makedirs, remove, walk, _exit as exit
 try:
-	from numpy import dot, array, random, exp, savetxt, tanh
+	from numpy import dot, array, random, exp, savetxt, tanh, sort
 except ImportError:
 	print("O modulo numpy nao foi encontrado execute o comando: python -m pip install numpy")
 	exit(1)
@@ -118,13 +118,16 @@ class PyNN:
 		
 		arrays = []
 		pesos_ajustados = []
+		indexs = []
 		shapes = []
+
+		x = 0
 
 		for paths,dirs,files in walk(path):
 			for file in files:
 				
 				try:
-					handle = open(paths+'\\'+file, 'r')
+					handle = open(paths+'/'+file, 'r')
 					read = handle.read()
 					handle.close()
 				except IOError:
@@ -139,12 +142,19 @@ class PyNN:
 					else:
 						spl = read.split(delimiter)
 						arr = array(spl[1:len(spl)], dtype=float)
-						pesos_ajustados.append(arr)
+						pesos_ajustados.append({int(file.split('-')[1].split('.')[0]): arr})
+						indexs.append(int(file.split('-')[1].split('.')[0]))
+						x += 1
 				except:
 					print("Pesos ou configuracoes da rede invalidos ...")
 					exit(1)
 
-		arrays.append(pesos_ajustados)
+		pesos_ajustados = sort(pesos_ajustados)
+		
+		for x, value in enumerate(pesos_ajustados):
+			pesos_ajustados[x] = pesos_ajustados[x][x]
+
+		arrays.append(pesos_ajustados)		
 		arrays.append(shapes)
 
 		return arrays
@@ -160,7 +170,7 @@ class PyNN:
 			try:
 				if x == 0:
 					pesos_ajustados[x] = value.reshape(shapes[1], shapes[2])
-				elif x < (shapes[4]-1):
+				elif x < (int(shapes[4])-1) and x > 0:
 					pesos_ajustados[x] = value.reshape(shapes[2], shapes[2])
 				else:
 					pesos_ajustados[x] = value.reshape(shapes[2], shapes[3])
@@ -177,7 +187,7 @@ class PyNN:
 			for z, p in enumerate(ps):
 				for c, x in enumerate(p):
 					try:
-						handle = open('{path}/weight_{num}.csv'.format(path=path, num=i), 'a')
+						handle = open('{path}/weight-{num}.csv'.format(path=path, num=i), 'a')
 						handle.write(delimiter+str(x))
 						handle.close()
 					except IOError:
@@ -199,11 +209,11 @@ class PyNN:
 			if len(q) == '' or q.upper() != 'N':
 				for paths,dirs,files in walk('weights/'):
 					for file in files:
-						remove(paths+'\\'+file)
+						remove(paths+'/'+file)
 		else:
 			for paths,dirs,files in walk('weights/'):
 				for file in files:
-					remove(paths+'\\'+file)
+					remove(paths+'/'+file)
 
 		epochs = 0
 		try:
@@ -211,7 +221,8 @@ class PyNN:
 				dc = len(str(saida[0]).split('.')[1])+2
 			except:
 				dc = int(str(saida[0]).split('-')[1])+2
-			outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
+			o = self.feedfoward(entrada)
+			outputs = o[len(o)-1]
 			while float(str(outputs[0])[0:dc]) != saida[0]:
 				self.backpropagation(entradas, saidas, eta)
 				outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
@@ -230,3 +241,42 @@ class PyNN:
 				exit(1)
 
 		#return outputs[len(outputs)-1]
+	
+	def read_csv(self, filename, delimiter=';'):
+		read = []
+		handle = open(filename, 'r')
+		
+		for r in handle:
+			r = r.strip()
+			arr = r.split(delimiter)
+			read.append(array(arr, dtype=float))
+
+		handle.close()
+		return array(read)
+
+	def format_dataset(self, read, delimiter=';', outlast=True, iout=0):
+		inputs = []
+		outputs = []
+		ret = []
+
+		if outlast:
+			for arr in read:
+				outputs.append(array([arr[len(arr)-1]], dtype=float))
+			iout = len(arr)-1
+		else:
+			for arr in read:
+				outputs.append(array(arr[iout], dtype=float))
+
+		if outlast:
+			for arr in read:
+				arr = arr[0:len(arr)-1]
+				inputs.append(array(arr, dtype=float))
+		else:
+			for arr in read:
+				arr = arr[iout:len(arr)-1]
+				inputs.append(array(arr, dtype=float))
+
+		ret.append(array(outputs, dtype=float))
+		ret.append(array(inputs, dtype=float))
+
+		return ret
