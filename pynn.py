@@ -150,9 +150,9 @@ class PyNN:
 		return arrays
 
 	''' Roda a rede neural com os pesos treinados, e com uma entrada qualquer '''
-	def run(self, entrada, path='weights/', act='sigmoid'):
+	def run(self, entrada, path='weights/', act='sigmoid', delimiter=';'):
 
-		arrays = self.loadweights(path)
+		arrays = self.loadweights(path=path, delimiter=delimiter)
 		pesos_ajustados = arrays[0]
 		shapes = arrays[1][0]
 
