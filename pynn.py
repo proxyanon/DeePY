@@ -207,7 +207,10 @@ class PyNN:
 
 		epochs = 0
 		try:
-			dc = len(str(saida[0]).split('.')[1])+2
+			try:
+				dc = len(str(saida[0]).split('.')[1])+2
+			except:
+				dc = int(str(saida[0]).split('-')[1])+2
 			outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
 			while float(str(outputs[0])[0:dc]) != saida[0]:
 				self.backpropagation(entradas, saidas, eta)
