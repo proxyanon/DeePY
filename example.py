@@ -37,11 +37,8 @@ entrada_teste_2 = array([33.0, 1210.0, 0.0, 1.0, 1.0]) / 10000 # => mais proximo
 
 # instanciamento da rede e treino usando a sigmoid
 nn = PyNN(n_camadas=3, n_entradas=5, n_hidden=10, n_saida=1, activation='sigmoid')
-#nn.train(entradas=entradas, saidas=saidas, entrada=entrada, saida=array([0.0001]), eta=1)
+nn.train(entradas=entradas, saidas=saidas, entrada=entrada, saida=array([0.0001]), eta=1)
 
 # execucao dos pesos treinados
 print entrada_teste * 10000, '=>', nn.run(entrada=entrada_teste, act='sigmoid')
 print entrada_teste_2 * 10000, '=>', nn.run(entrada=entrada_teste_2, act='sigmoid')
-
-print entrada_teste * 10000, '=>', nn.run(entrada=entrada_teste, act='sigmoid', path='generations/generation_4/')
-print entrada_teste_2 * 10000, '=>', nn.run(entrada=entrada_teste_2, act='sigmoid', path='generations/generation_4/')
