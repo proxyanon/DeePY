@@ -3,7 +3,7 @@
 ''' 
 	
 	@author Daniel Victor Frerie Feitosa
-	@version 3.2.0
+	@version 4.0.0
 	@editor Sublime Text 3
 	
 	@copyrights by Daniel Victor Frerie Feitosa - 2018
@@ -228,7 +228,7 @@ class PyNN:
 				outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
 				epochs += 1
 				if banners:
-					print(float(str(outputs[0])[0:dc]), float(saida[0]), epochs)
+					print outputs, saida, epochs
 		except KeyboardInterrupt:
 			pass
 
