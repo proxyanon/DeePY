@@ -3,7 +3,7 @@
 ''' 
 	
 	@author Daniel Victor Frerie Feitosa
-	@version 4.0.0
+	@version 4.0.1
 	@editor Sublime Text 3
 	
 	@copyrights by Daniel Victor Frerie Feitosa - 2018
@@ -83,11 +83,19 @@ class PyNN:
 		layers = []
 		for x in xrange(self.n_pesos):
 			if x == 0:
-				l = _activation(x=dot(entradas, self.pesos[x]), act=self.activation)
-				layers.append(l)
+				try:
+					l = _activation(x=dot(entradas, self.pesos[x]), act=self.activation)
+					layers.append(l)
+				except:
+					print("shapes das entradas e pesos nao alinhados {} => {}".format(entradas.shape, self.pesos[x].shape))
+					exit(1)
 			else:
-				l = _activation(x=dot(layers[x-1], self.pesos[x]), act=self.activation)
-				layers.append(l)
+				try:
+					l = _activation(x=dot(layers[x-1], self.pesos[x]), act=self.activation)
+					layers.append(l)
+				except:
+					print("shape da camada {} => {} nao esta alinhado com o peso {} => {}".format(x, layers[x-1].shape, x, self.pesos[x].shape))
+					exit(1)
 
 		return layers
 
@@ -202,7 +210,7 @@ class PyNN:
 			print("Nao foi possivel salvar a configuracao da rede ...")
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False, banners=True, delimiter=';'):
+	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False, banners=True, delimiter=';', creategeneration=False, genname=''):
 
 		if not autodel:
 			q = raw_input('Continuar vai remover todos os pesos salvos ... ')
@@ -240,8 +248,19 @@ class PyNN:
 			except KeyboardInterrupt:
 				exit(1)
 
+		if creategeneration:
+			gename = 'generations/{}/'.format(genname)
+			print 'criando => ', genname
+			makedirs(genname)
+			try:
+				print 'salvando ...'
+				self.saveweights(path=genname, delimiter=delimiter)
+			except KeyboardInterrupt:
+				exit(1)
+
 		#return outputs[len(outputs)-1]
 	
+	''' Retorna a leitura do CSV transformada em um objeto do numpy '''
 	def read_csv(self, filename, delimiter=';'):
 		read = []
 		handle = open(filename, 'r')
@@ -254,6 +273,7 @@ class PyNN:
 		handle.close()
 		return array(read)
 
+	''' Faz a formatacao da leitura do CSV para o formato do numpy separando as entradas das saidas '''
 	def format_dataset(self, read, delimiter=';', outlast=True, iout=0):
 		inputs = []
 		outputs = []
