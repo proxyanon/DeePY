@@ -3,7 +3,7 @@
 ''' 
 	
 	@author Daniel Victor Frerie Feitosa
-	@version 4.0.1
+	@version 4.3.0
 	@editor Sublime Text 3
 	
 	@copyrights by Daniel Victor Frerie Feitosa - 2018
@@ -14,7 +14,7 @@
 	
 	feito com muita prometazina e cafe ...
 '''
-from os import path, makedirs, remove, walk, _exit as exit
+from os import path as pt, makedirs, remove, walk, _exit as exit
 try:
 	from numpy import dot, array, random, exp, savetxt, tanh, sort
 except ImportError:
@@ -55,12 +55,13 @@ def single_foward(entradas, pesos, act='sigmoid'):
 ''' Rede neural by @DanielFreire00 '''
 class PyNN:
 
-	def __init__(self, n_camadas, n_entradas, n_hidden, n_saida, activation='sigmoid'):
+	def __init__(self, n_camadas, n_entradas, n_hidden, n_saida, eta=1, activation='sigmoid'):
 
 		self.n_camadas = n_camadas
 		self.n_entradas = n_entradas
 		self.n_hidden = n_hidden
 		self.n_saida = n_saida
+		self.eta = eta
 		self.activation = activation
 
 		random.seed(1)
@@ -74,7 +75,7 @@ class PyNN:
 		self.pesos.append(2*random.random((self.n_hidden, self.n_saida))-1)
 		self.n_pesos = len(self.pesos)
 
-		if path.exists('weights/') == False:
+		if pt.exists('weights/') == False:
 			makedirs('weights')
 
 	''' Foward => Ziw = (i1 * w1) + (i2 * w2) ... '''
@@ -117,9 +118,9 @@ class PyNN:
 
 		for x in xrange(self.n_pesos):
 			if x != 0:
-				self.pesos[x] += layers[x-1].T.dot(deltas[(self.n_pesos-x)-1]) * eta
+				self.pesos[x] += layers[x-1].T.dot(deltas[(self.n_pesos-x)-1]) * self.eta
 			else:
-				self.pesos[x] += entradas.T.dot(deltas[len(deltas)-1]) * eta
+				self.pesos[x] += entradas.T.dot(deltas[len(deltas)-1]) * self.eta
 
 	''' Carrega os pesos a partir dos pesos salvos pela funcao saveweights '''
 	def loadweights(self, path='weights/', delimiter=';'):
@@ -204,13 +205,13 @@ class PyNN:
 		try:
 			handle = open('{path}/network-arch.csv'.format(path=path), 'w')
 			handle.write('[network]\n')
-			handle.write('{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}'.format(self.n_camadas, self.n_entradas, self.n_hidden, self.n_saida, self.n_pesos, delimiter=delimiter))
+			handle.write('{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}'.format(self.n_camadas, self.n_entradas, self.n_hidden, self.n_saida, self.n_pesos, self.eta, delimiter=delimiter))
 			handle.close()
 		except IOError:
 			print("Nao foi possivel salvar a configuracao da rede ...")
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida, eta=1, path='weights/', savenetwork=True, autodel=False, banners=True, delimiter=';', creategeneration=False, genname=''):
+	def train(self, entradas, saidas, entrada, saida, path='weights/', savenetwork=True, autodel=False, banners=True, delimiter=';', create_generation=False, gen_name='', use_epochs=False, epochs=500000):
 
 		if not autodel:
 			q = raw_input('Continuar vai remover todos os pesos salvos ... ')
@@ -223,7 +224,7 @@ class PyNN:
 				for file in files:
 					remove(paths+'/'+file)
 
-		epochs = 0
+		epc = 0
 		try:
 			try:
 				dc = len(str(saida[0]).split('.')[1])+2
@@ -232,11 +233,21 @@ class PyNN:
 			o = self.feedfoward(entrada)
 			outputs = o[len(o)-1]
 			while float(str(outputs[0])[0:dc]) != saida[0]:
-				self.backpropagation(entradas, saidas, eta)
+				
+				self.backpropagation(entradas, saidas)
 				outputs = self.feedfoward(entrada)[len(self.feedfoward(entrada))-1]
-				epochs += 1
+				
+				epc += 1
+				
+				if use_epochs:
+					if epochs == epc:
+						break
+
 				if banners:
-					print outputs, saida, epochs
+					print outputs, saida, epc
+
+			epc = 0
+
 		except KeyboardInterrupt:
 			pass
 
@@ -248,15 +259,30 @@ class PyNN:
 			except KeyboardInterrupt:
 				exit(1)
 
-		if creategeneration:
-			gename = 'generations/{}/'.format(genname)
-			print 'criando => ', genname
-			makedirs(genname)
+		if create_generation:
+			
+			err_name = gen_name
+			gen_name = 'generations/{}/'.format(gen_name)
+			erros = '{}erros_{}.csv'.format(gen_name, err_name)
+			
+			print('[+] Criando => {}'.format(gen_name))
+			
+			if pt.exists(gen_name) == False:
+				makedirs(gen_name)
+			
 			try:
-				print 'salvando ...'
-				self.saveweights(path=genname, delimiter=delimiter)
+				self.saveweights(path=gen_name, delimiter=delimiter)
 			except KeyboardInterrupt:
-				exit(1)
+				print("Nao foi possivel salvar os pesos nessa pasta => {}".format(gen_name))
+
+			err = saida[0] - float(str(outputs[0])[0:dc])
+			
+			#try:
+			handle = open(erros, 'w')
+			handle.write(str(err))
+			handle.close()
+			#except:
+			#	print("Nao foi possivel salvar os erros dos pesos nessa pasta => {}".format(gen_name))
 
 		#return outputs[len(outputs)-1]
 	
