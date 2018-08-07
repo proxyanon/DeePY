@@ -3,7 +3,7 @@
 ''' 
 	
 	@author Daniel Victor Frerie Feitosa
-	@version 4.3.0
+	@version 4.5.0
 	@editor Sublime Text 3
 	
 	@copyrights by Daniel Victor Frerie Feitosa - 2018
@@ -55,16 +55,18 @@ def single_foward(entradas, pesos, act='sigmoid'):
 ''' Rede neural by @DanielFreire00 '''
 class PyNN:
 
-	def __init__(self, n_camadas, n_entradas, n_hidden, n_saida, eta=1, activation='sigmoid'):
+	def __init__(self, n_camadas, n_entradas, n_hidden, n_saida, eta=1, banners=True, activation='sigmoid', random_constant=True):
 
 		self.n_camadas = n_camadas
 		self.n_entradas = n_entradas
 		self.n_hidden = n_hidden
 		self.n_saida = n_saida
 		self.eta = eta
+		self.banners = banners
 		self.activation = activation
 
-		random.seed(1)
+		if random_constant:
+			random.seed(1)
 
 		self.pesos = []
 		self.pesos.append(2*random.random((self.n_entradas, self.n_hidden))-1)
@@ -148,6 +150,8 @@ class PyNN:
 						spl = read.split(delimiter)
 						arr = array(spl, dtype=int)
 						shapes.append(arr)
+					elif '[erros]' in read:
+						pass
 					else:
 						spl = read.split(delimiter)
 						arr = array(spl[1:len(spl)], dtype=float)
@@ -155,7 +159,7 @@ class PyNN:
 						indexs.append(int(file.split('-')[1].split('.')[0]))
 						x += 1
 				except:
-					print("Pesos ou configuracoes da rede invalidos ...")
+					print("Pesos ou configuracoes da rede invalidos => {filename} ...".format(filename=file))
 					exit(1)
 
 		pesos_ajustados = sort(pesos_ajustados)
@@ -205,13 +209,13 @@ class PyNN:
 		try:
 			handle = open('{path}/network-arch.csv'.format(path=path), 'w')
 			handle.write('[network]\n')
-			handle.write('{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}{delimiter}{}'.format(self.n_camadas, self.n_entradas, self.n_hidden, self.n_saida, self.n_pesos, self.eta, delimiter=delimiter))
+			handle.write('{n_camadas}{d}{n_entradas}{d}{n_hidden}{d}{n_saida}{d}{n_pesos}'.format(n_camadas=self.n_camadas, n_entradas=self.n_entradas, n_hidden=self.n_hidden, n_saida=self.n_saida, n_pesos=self.n_pesos, d=delimiter))
 			handle.close()
 		except IOError:
 			print("Nao foi possivel salvar a configuracao da rede ...")
 
 	''' Treina a rede com as entradas, saidas, entrada epecifica, saida esperada depois salva os pesos do treino '''
-	def train(self, entradas, saidas, entrada, saida, path='weights/', savenetwork=True, autodel=False, banners=True, delimiter=';', create_generation=False, gen_name='', use_epochs=False, epochs=500000):
+	def train(self, entradas, saidas, entrada, saida, path='weights/', savenetwork=True, autodel=False, delimiter=';', create_generation=False, gen_name='', use_epochs=False, epochs=500000):
 
 		if not autodel:
 			q = raw_input('Continuar vai remover todos os pesos salvos ... ')
@@ -232,6 +236,7 @@ class PyNN:
 				dc = int(str(saida[0]).split('-')[1])+2
 			o = self.feedfoward(entrada)
 			outputs = o[len(o)-1]
+			
 			while float(str(outputs[0])[0:dc]) != saida[0]:
 				
 				self.backpropagation(entradas, saidas)
@@ -243,7 +248,7 @@ class PyNN:
 					if epochs == epc:
 						break
 
-				if banners:
+				if self.banners:
 					print outputs, saida, epc
 
 			epc = 0
@@ -252,20 +257,21 @@ class PyNN:
 			pass
 
 		if savenetwork:
-			if banners:
+			if self.banners:
 				print("\n[+] Salvando pesos ...")
 			try:
+				print self.pesos[0].shape
 				self.saveweights(path=path, delimiter=delimiter)
 			except KeyboardInterrupt:
 				exit(1)
 
 		if create_generation:
 			
-			err_name = gen_name
 			gen_name = 'generations/{}/'.format(gen_name)
-			erros = '{}erros_{}.csv'.format(gen_name, err_name)
+			erros = '{}erro.csv'.format(gen_name)
 			
-			print('[+] Criando => {}'.format(gen_name))
+			if self.banners:
+				print('[+] Criando => {}'.format(gen_name))
 			
 			if pt.exists(gen_name) == False:
 				makedirs(gen_name)
@@ -275,14 +281,18 @@ class PyNN:
 			except KeyboardInterrupt:
 				print("Nao foi possivel salvar os pesos nessa pasta => {}".format(gen_name))
 
-			err = saida[0] - float(str(outputs[0])[0:dc])
+			if saida[0] > float(str(outputs[0])[0:dc]):
+				err = saida[0] - float(str(outputs[0])[0:dc])
+			else:
+				err = float(str(outputs[0])[0:dc]) - saida[0]
 			
-			#try:
-			handle = open(erros, 'w')
-			handle.write(str(err))
-			handle.close()
-			#except:
-			#	print("Nao foi possivel salvar os erros dos pesos nessa pasta => {}".format(gen_name))
+			try:
+				handle = open(erros, 'w')
+				handle.write('[erros]\n')
+				handle.write(str(err))
+				handle.close()
+			except:
+				print("Nao foi possivel salvar os erros dos pesos nessa pasta => {}".format(gen_name))
 
 		#return outputs[len(outputs)-1]
 	
