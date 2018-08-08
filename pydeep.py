@@ -53,7 +53,7 @@ def single_foward(entradas, pesos, act='sigmoid'):
 	return layers
 
 ''' Rede neural by @DanielFreire00 '''
-class PyNN:
+class PyDeep:
 
 	version = '4.5.0'
 	git = 'https://github.com/proxyanon/'
