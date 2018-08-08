@@ -1,4 +1,4 @@
-from pynn import *
+from pydeep import *
 
 # idade, renda, sexo, estadocivil, filhos
 # masculino = 1, feminino = 0
@@ -50,7 +50,7 @@ entrada_desconhecida = array([
 						 [70.0, 2500.0, 0.0, 0.0, 1.0] # 1
 						]) / 10000
 
-nn = PyNN(n_camadas=3, n_entradas=5, n_hidden=5, n_saida=1, eta=1, activation='sigmoid')
+nn = PyDeep(n_camadas=3, n_entradas=5, n_hidden=5, n_saida=1, eta=1, activation='sigmoid')
 
 for x, entrada in enumerate(entrada_teste):
 	gen_name = 'generation_{}/'.format(x)
