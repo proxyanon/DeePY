@@ -53,7 +53,7 @@ entrada_desconhecida = array([
 nn = PyNN(n_camadas=3, n_entradas=5, n_hidden=5, n_saida=1, eta=1, activation='sigmoid')
 
 for x, entrada in enumerate(entrada_teste):
-	gen_name = 'generation_{}'.format(x)
+	gen_name = 'generation_{}/'.format(x)
 	nn.train(
 		 entradas=entradas, 
 		 saidas=saidas, 
