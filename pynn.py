@@ -6,7 +6,7 @@
 	@version 4.5.0
 	@editor Sublime Text 3
 	
-	@copyrights by Daniel Victor Frerie Feitosa - 2018
+	@copyrights by Daniel Victor Freire Feitosa - 2018
 	@license GPL 3.0
 
 	Twitter: @DanielFreire00
@@ -54,6 +54,10 @@ def single_foward(entradas, pesos, act='sigmoid'):
 
 ''' Rede neural by @DanielFreire00 '''
 class PyNN:
+
+	version = '4.5.0'
+	git = 'https://github.com/proxyanon/'
+	author = 'Daniel Victor Freire Feitosa'
 
 	def __init__(self, n_camadas, n_entradas, n_hidden, n_saida, eta=1, banners=True, activation='sigmoid', random_constant=True):
 
