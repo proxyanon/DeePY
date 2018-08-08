@@ -4,7 +4,6 @@ from pynn import *
 # masculino = 1, feminino = 0
 # casado = 0, solteiro 1
 
-# dataset simples
 entradas = array([
 				 [18.0, 0.0, 1.0, 0.0, 0.0],
 				 [22.0, 1210.0, 1.0, 0.0, 0.0],
@@ -14,9 +13,8 @@ entradas = array([
 				 [24.0, 2500.0, 0.0, 1.0, 0.0],
 				 [21.0, 980.0, 1.0, 0.0, 0.0],
 				 [20.0, 980.0, 0.0, 0.0, 0.0]
-				]) / 10000
+				], dtype=float) / 10000
 
-# saidas baseadas no dataset
 saidas = array([
 				 [0],
 				 [1],
@@ -28,17 +26,45 @@ saidas = array([
 				 [0]
 				])
 
-# entrada arbitraria
-entrada = array([19.0, 300.0, 1.0, 0.0, 0.0]) / 10000
+entrada_teste = array([
+					 [40.0, 2000.0, 1.0, 1.0, 2.0],
+					 [33.0, 1578.0, 0.0, 0.0, 0.0],
+					 [26.0, 1000.0, 0.0, 0.0, 0.0],
+					 [30.0, 980.0, 1.0, 0.0, 1.0],
+					], dtype=float) / 10000
 
-# entradas para o teste do treino
-entrada_teste = array([19.0, 980.0, 1.0, 0.0, 0.0]) / 10000 # => mais proximo de 0.000 possivel
-entrada_teste_2 = array([33.0, 1210.0, 0.0, 1.0, 1.0]) / 10000 # => mais proximo de 1.0 possivel
+saida_teste = array([
+					 [1.0],
+					 [1.0],
+					 [0.0],
+					 [0.0]
+					])
 
-# instanciamento da rede e treino usando a sigmoid
-nn = PyNN(n_camadas=3, n_entradas=5, n_hidden=10, n_saida=1, activation='sigmoid')
-nn.train(entradas=entradas, saidas=saidas, entrada=entrada, saida=array([0.0001]), eta=1)
+entrada_desconhecida = array([
+						 [19.0, 550.0, 1.0, 0.0, 0.0], # 0
+						 [56.0, 2300.0, 0.0, 1.0, 3.0], # 1
+						 [33.0, 1800.0, 1.0, 0.0, 1.0], # 1
+						 [22.0, 2000.0, 1.0, 1.0, 0.0], # 1
+						 [20.0, 900.0, 0.0, 0.0, 0.0], # 0
+						 [48.0, 1100.0, 1.0, 0.0, 0.0], # 0
+						 [70.0, 2500.0, 0.0, 0.0, 1.0] # 1
+						]) / 10000
 
-# execucao dos pesos treinados
-print entrada_teste * 10000, '=>', nn.run(entrada=entrada_teste, act='sigmoid')
-print entrada_teste_2 * 10000, '=>', nn.run(entrada=entrada_teste_2, act='sigmoid')
+nn = PyNN(n_camadas=3, n_entradas=5, n_hidden=5, n_saida=1, eta=1, activation='sigmoid')
+
+for x, entrada in enumerate(entrada_teste):
+	gen_name = 'generation_{}'.format(x)
+	nn.train(
+		 entradas=entradas, 
+		 saidas=saidas, 
+		 entrada=entrada, 
+		 saida=saida_teste[x], 
+		 create_generation=True, 
+		 gen_name=gen_name, 
+		 use_epochs=True, 
+		 epochs=150000,
+		 autodel=True
+		)
+
+for entrada in entrada_desconhecida:
+	print entrada * 10000, '=>', nn.run(entrada=entrada, path='generations/{}'.format(gen_name))
