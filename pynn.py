@@ -260,7 +260,6 @@ class PyNN:
 			if self.banners:
 				print("\n[+] Salvando pesos ...")
 			try:
-				print self.pesos[0].shape
 				self.saveweights(path=path, delimiter=delimiter)
 			except KeyboardInterrupt:
 				exit(1)
