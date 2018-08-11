@@ -1,5 +1,5 @@
-# pynn
-Biblioteca simples, implementando a criação de redes com várias camadas e neurônios ...
+# DeePY
+Biblioteca feita para criação de redes neurais de aprendizado profundo (deeplearning).
 
 # Requisitos
 numpy :)
