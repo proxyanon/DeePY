@@ -18,7 +18,7 @@ dpy.savemodel()
 
 
 ret = dpy.predict(inpt=np.array([0, 0, 0]))
-prediction = ret[len(ret)-1][0]['layer']
+prediction = ret['layer']
 rounded = round(prediction[0])
 
 print 'input =>', np.array([0, 0, 0]), 'predict =>', prediction, 'predict rounded =>', rounded
