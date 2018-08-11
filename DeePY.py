@@ -3,7 +3,7 @@
 '''
 
 	@author Daniel Victor Freire Feitosa
-	@version 5.0.0
+	@version 5.0.1
 	@editor Sublime Text 3
 
 	@license GPL 3.0
@@ -158,8 +158,10 @@ class Network:
 	def predict(self, inpt, weights=[]):
 		
 		if len(weights) > 0:
-			return self.single_foward(inputs=inpt, weights=weights)
-		return self.foward(inputs=inpt)
+			ret = self.single_foward(inputs=inpt, weights=weights)
+		ret = self.foward(inputs=inpt)
+
+		return ret[len(ret)-1][0]
 
 	''' Salva o modelo da rede '''
 	def savemodel(self, model_name='model.json'):
