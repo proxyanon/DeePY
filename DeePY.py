@@ -51,7 +51,7 @@ class Layer:
 		if self.random_constant:
 			np.random.seed(1)
 
-	def create(self, _type, sizes, _activation='sigmoid'):
+	def create(self, _type, sizes, activation='sigmoid'):
 
 		if _type == 'inputs' or _type == 'input':
 			l = 2 * np.random.random((sizes[0], sizes[1])) - 1
@@ -60,7 +60,7 @@ class Layer:
 		elif _type == 'outputs' or _type == 'output':
 			l = 2 * np.random.random((sizes[0], sizes[1])) - 1
 
-		self.lrs.append([{'layer': l, 'activation': _activation}])
+		self.lrs.append([{'layer': l, 'activation': activation}])
 
 	def layers(self):
 		return self.lrs
@@ -69,11 +69,11 @@ class Layer:
 ''' Rede neural by @DanielFreire00 '''
 class Network:
 
-	def __init__(self, layers, eta=1, banners=True):
+	def __init__(self, layers, eta=1, verbose=True):
 
 		self.weights = layers
 		self.eta = eta
-		self.banners = banners
+		self.verbose = verbose
 		self.errs = [0]
 		self.weights_size = len(self.weights)
 
@@ -111,7 +111,7 @@ class Network:
 		layers = self.foward(inputs=inputs)
 		deltas = []
 
-		if self.banners:
+		if self.verbose:
 			errors = []
 
 		for x in xrange(self.weights_size):
@@ -124,7 +124,7 @@ class Network:
 				d = e * _derivate(x=layers[(self.weights_size-x)-1][0]['layer'], act=layers[(self.weights_size-x)-1][0]['activation'])
 				deltas.append(d)
 				
-				if self.banners:
+				if self.verbose:
 					errors.append(e)
 
 		for x in xrange(self.weights_size):
@@ -133,7 +133,7 @@ class Network:
 			else:
 				self.weights[x][0]['layer'] += inputs.T.dot(deltas[len(deltas)-1]) * self.eta
 
-		if self.banners:
+		if self.verbose:
 			err = errors[len(errors)-1]
 			self.errs = err[len(err)-1]
 
@@ -145,7 +145,7 @@ class Network:
 
 		try:
 			for e in xrange(epochs):
-				if self.banners:
+				if self.verbose:
 					stdout.write("\r{}/{} epochs | error => {} \\".format(e, epochs, self.errs[len(self.errs)-1]))
 					stdout.write("\r{}/{} epochs | error => {} /".format(e, epochs, self.errs[len(self.errs)-1]))
 				self.backward(inputs=inputs, outputs=outputs)
@@ -164,7 +164,7 @@ class Network:
 	''' Salva o modelo da rede '''
 	def savemodel(self, model_name='model.json'):
 		
-		model = [{'weights_size': self.weights_size, 'eta': self.eta, 'banners': self.banners}]
+		model = [{'weights_size': self.weights_size, 'eta': self.eta, 'verbose': self.verbose}]
 		handle = open(model_name, 'w')
 		handle.write(json.dumps(model))
 		handle.close()
