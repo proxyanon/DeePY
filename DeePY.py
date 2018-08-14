@@ -3,7 +3,7 @@
 '''
 
 	@author Daniel Victor Freire Feitosa
-	@version 5.0.1
+	@version 5.0.2
 	@editor Sublime Text 3
 
 	@license GPL 3.0
@@ -12,6 +12,7 @@
 '''
 
 from sys import stdout, exit
+from tqdm import tqdm
 
 try:
 	import numpy as np, json
@@ -115,8 +116,6 @@ class Network:
 		layers = self.foward(inputs=inputs)
 		deltas = []
 
-		if self.verbose:
-			errors = []
 
 		for x in xrange(self.weights_size):
 			if x == 0:
@@ -127,19 +126,12 @@ class Network:
 				e = deltas[x-1].dot(self.weights[self.weights_size-x][0]['layer'].T)
 				d = e * _derivate(x=layers[(self.weights_size-x)-1][0]['layer'], act=layers[(self.weights_size-x)-1][0]['activation'])
 				deltas.append(d)
-				
-				if self.verbose:
-					errors.append(e)
 
 		for x in xrange(self.weights_size):
 			if x != 0:
 				self.weights[x][0]['layer'] += layers[x-1][0]['layer'].T.dot(deltas[(self.weights_size-x)-1]) * self.eta
 			else:
 				self.weights[x][0]['layer'] += inputs.T.dot(deltas[len(deltas)-1]) * self.eta
-
-		if self.verbose:
-			err = errors[len(errors)-1]
-			self.errs = err[len(err)-1]
 
 	''' Treino da rede '''
 	def train(self, inputs, outputs, epochs=1000, weights=[]):
@@ -148,15 +140,37 @@ class Network:
 			self.weights = weights
 
 		try:
-			for e in xrange(epochs):
-				if self.verbose:
-					stdout.write("\r{}/{} epochs | error => {} \\".format(e, epochs, self.errs[len(self.errs)-1]))
-					stdout.write("\r{}/{} epochs | error => {} /".format(e, epochs, self.errs[len(self.errs)-1]))
-				self.backward(inputs=inputs, outputs=outputs)
+			if self.verbose:
+				for e in tqdm(range(epochs)):
+					self.backward(inputs=inputs, outputs=outputs)
+			else:
+				for e in xramge(epochs):
+					self.backward(inputs=inputs, outputs=outputs)	
 		except KeyboardInterrupt:
 			pass
 
-		print "\n"
+		if self.verbose:
+			print "\n"
+
+	def train_with_test(self, inputs, outputs):
+
+		self.backward(inputs=inputs, outputs=outputs)
+		out = self.foward(inputs=inputs)
+		flag = False
+
+		print out[len(out)-1][0]['layer'], outputs
+		exit()
+
+		while not flag:
+			for x, value in enumerate(out[len(out)-1][0]['layer']):
+				out[len(out)-1][0]['layer'][x][0] = round(out[len(out)-1][0]['layer'][x][0])
+			
+			if out[len(out)-1][0]['layer'] == outputs:
+				flag = True
+
+			self.backward(inputs=inputs, outputs=outputs)
+			out = self.foward(inputs=inputs)
+
 
 	''' Previsao de resultados baseado nos pesos passados ou pos treino '''
 	def predict(self, inpt, weights=[]):
