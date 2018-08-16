@@ -23,8 +23,8 @@ except ImportError:
 	print("O modulo numpy nao foi encontrado execute o comando: python -m pip install numpy")
 	exit()
 
-__version_date__ = '11/08/2018'
-__version__ = '5.0.1'
+__version_date__ = '15/08/2018'
+__version__ = '5.0.21'
 __author__ = 'Daniel Victor Freire Feitosa'
 __github__ = 'https://github.com/proxyanon/'
 
