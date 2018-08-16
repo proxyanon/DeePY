@@ -1,9 +1,7 @@
-#-*-coding: utf8-*-
-
 '''
 
 	@author Daniel Victor Freire Feitosa
-	@version 5.0.2
+	@version 5.0.21
 	@editor Sublime Text 3
 
 	@license GPL 3.0
@@ -12,7 +10,12 @@
 '''
 
 from sys import stdout, exit
-from tqdm import tqdm
+
+try:
+	from tqdm import tqdm
+except ImportError:
+	print("O modulo tqmd nao foi encontrado execute o comando: python -m pip install tqdm")
+	exit()
 
 try:
 	import numpy as np, json
