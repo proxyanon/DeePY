@@ -14,7 +14,7 @@ from sys import stdout, exit
 try:
 	from tqdm import tqdm
 except ImportError:
-	print("O modulo tqmd nao foi encontrado execute o comando: python -m pip install tqdm")
+	print("O modulo tqdm nao foi encontrado execute o comando: python -m pip install tqdm")
 	exit()
 
 try:
