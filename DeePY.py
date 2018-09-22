@@ -147,7 +147,7 @@ class Network:
 				for e in tqdm(range(epochs)):
 					self.backward(inputs=inputs, outputs=outputs)
 			else:
-				for e in xramge(epochs):
+				for e in xrange(epochs):
 					self.backward(inputs=inputs, outputs=outputs)	
 		except KeyboardInterrupt:
 			pass
