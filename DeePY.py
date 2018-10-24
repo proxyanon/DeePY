@@ -1,7 +1,7 @@
 '''
 
 	@author Daniel Victor Freire Feitosa
-	@version 5.0.21
+	@version 5.1.0
 	@editor Sublime Text 3
 
 	@license GPL 3.0
@@ -23,8 +23,8 @@ except ImportError:
 	print("O modulo numpy nao foi encontrado execute o comando: python -m pip install numpy")
 	exit()
 
-__version_date__ = '15/08/2018'
-__version__ = '5.0.21'
+__version_date__ = '23/10/2018'
+__version__ = '5.1.0'
 __author__ = 'Daniel Victor Freire Feitosa'
 __github__ = 'https://github.com/proxyanon/'
 
@@ -85,11 +85,14 @@ class Network:
 		self.errs = [0]
 		self.weights_size = len(self.weights)
 
+		if self.verbose:
+			print('Version:', __version__, '-', 'Date:', __version_date__, '\n')
+
 	''' Foward => Ziw = (i1 * w1) + (i2 * w2) ... '''
 	def foward(self, inputs):
 
 		layers = []
-		for x in xrange(self.weights_size):
+		for x in range(self.weights_size):
 			if x == 0:
 				l = _activation(x=np.dot(inputs, self.weights[x][0]['layer']), act=self.weights[x][0]['activation'])
 				layers.append([{'layer': l, 'activation': self.weights[x][0]['activation']}])
@@ -103,7 +106,7 @@ class Network:
 	def single_foward(self, inputs, weights):
 
 		layers = []
-		for x in xrange(len(weights)):
+		for x in range(len(weights)):
 			if x == 0:
 				l = _activation(x=np.dot(inputs, weights[x][0]['weight']), act=weights[x][0]['activation'])
 				layers.append([{'layer': l, 'activation': weights[x][0]['activation']}])
@@ -120,7 +123,7 @@ class Network:
 		deltas = []
 
 
-		for x in xrange(self.weights_size):
+		for x in range(self.weights_size):
 			if x == 0:
 				e = outputs - layers[len(layers)-1][0]['layer']
 				d = e * _derivate(x=layers[self.weights_size-1][0]['layer'], act=layers[self.weights_size-1][0]['activation'])
@@ -130,7 +133,7 @@ class Network:
 				d = e * _derivate(x=layers[(self.weights_size-x)-1][0]['layer'], act=layers[(self.weights_size-x)-1][0]['activation'])
 				deltas.append(d)
 
-		for x in xrange(self.weights_size):
+		for x in range(self.weights_size):
 			if x != 0:
 				self.weights[x][0]['layer'] += layers[x-1][0]['layer'].T.dot(deltas[(self.weights_size-x)-1]) * self.eta
 			else:
@@ -147,22 +150,19 @@ class Network:
 				for e in tqdm(range(epochs)):
 					self.backward(inputs=inputs, outputs=outputs)
 			else:
-				for e in xrange(epochs):
+				for e in range(epochs):
 					self.backward(inputs=inputs, outputs=outputs)	
 		except KeyboardInterrupt:
 			pass
 
 		if self.verbose:
-			print "\n"
+			print("\n")
 
 	def train_with_test(self, inputs, outputs):
 
 		self.backward(inputs=inputs, outputs=outputs)
 		out = self.foward(inputs=inputs)
 		flag = False
-
-		print out[len(out)-1][0]['layer'], outputs
-		exit()
 
 		while not flag:
 			for x, value in enumerate(out[len(out)-1][0]['layer']):
@@ -180,7 +180,8 @@ class Network:
 		
 		if len(weights) > 0:
 			ret = self.single_foward(inputs=inpt, weights=weights)
-		ret = self.foward(inputs=inpt)
+		else:
+			ret = self.foward(inputs=inpt)
 
 		return ret[len(ret)-1][0]
 
